@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Options Trading Simulator</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f9fafb; padding: 2rem; }
+    h1 { color: #1f2937; }
+    .scenario, .button-container, #resultContainer, #finalResults, #moneyTracker { background-color: #e5e7eb; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+    button { padding: 0.5rem 1rem; font-size: 1.2rem; border: none; border-radius: 0.5rem; cursor: pointer; transition: opacity 0.3s; }
+    #buyLongBtn { background-color: #22c55e; }
+    #buyShortBtn { background-color: #ef4444; }
+    button:hover { opacity: 0.8; }
+    .correct { color: green; }
+    .incorrect { color: red; }
+    #balance { font-size: 1.5rem; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <h1>Options Trading Simulator</h1>
+
+  <div class="scenario">
+    <h3 id="scenarioTitle">Scenario 1</h3>
+    <p id="scenarioDescription">Loading scenario...</p>
+  </div>
+
+  <p><strong>Fee:</strong> A 1% fee is deducted from each trade.</p>
+
+  <div class="button-container">
+    <button id="buyLongBtn">Buy Long (Call)</button>
+    <button id="buyShortBtn">Buy Short (Put)</button>
+  </div>
+
+  <div id="resultContainer">
+    <h3>Trading Results</h3>
+    <p id="tradeResult">Select a trade option to begin.</p>
+  </div>
+
+  <div id="progress">
+    <p id="questionProgress">Question 1 of 30</p>
+  </div>
+
+  <div id="moneyTracker">
+    <p>Balance: USD <span id="balance">1000</span></p>
+  </div>
+
+  <div id="finalResults"></div>
+
+  <script>
+    const scenarios = [
+      { title: "Tech Company Announces Groundbreaking AI", description: "Company reveals a new AI product.", correctOption: "buyLong", data: { initial: 100, final: 120 }, explanation: "Tech advancements typically push stock prices up." },
+      { title: "Automobile Recall", description: "Massive vehicle recall due to safety issues.", correctOption: "buyShort", data: { initial: 150, final: 120 }, explanation: "Recalls often hurt stock prices." },
+      { title: "FDA Approval for Drug", description: "Pharma firm gets FDA approval for new drug.", correctOption: "buyLong", data: { initial: 80, final: 100 }, explanation: "Approval drives stock price up." },
+      { title: "Retail Earnings Miss", description: "Retailer reports earnings below expectations.", correctOption: "buyShort", data: { initial: 200, final: 180 }, explanation: "Earnings misses lead to declines." },
+      { title: "Energy Contract Win", description: "Energy firm secures a major government contract.", correctOption: "buyLong", data: { initial: 50, final: 75 }, explanation: "Contracts boost stock prices." },
+      { title: "Tesla New EV Model", description: "Tesla announces a groundbreaking new EV.", correctOption: "buyLong", data: { initial: 600, final: 700 }, explanation: "New models increase stock prices." },
+      { title: "Facebook Privacy Scandal", description: "Facebook faces a huge privacy breach.", correctOption: "buyShort", data: { initial: 250, final: 220 }, explanation: "Privacy issues hurt stock prices." },
+      { title: "Apple Record Earnings", description: "Apple announces record quarterly earnings.", correctOption: "buyLong", data: { initial: 135, final: 150 }, explanation: "Strong earnings push prices up." },
+      { title: "Microsoft Antitrust Probe", description: "Microsoft faces antitrust investigation.", correctOption: "buyShort", data: { initial: 280, final: 250 }, explanation: "Investigations cause price drops." },
+      { title: "Netflix Subscriber Growth", description: "Netflix grows international subscribers.", correctOption: "buyLong", data: { initial: 500, final: 550 }, explanation: "Subscriber growth increases stock value." }
+    ];
+
+    let currentScenario = 0;
+    let balance = 1000, correctAnswers = [], wrongAnswers = [];
+    const balanceElement = document.getElementById("balance");
+    const scenarioTitle = document.getElementById("scenarioTitle");
+    const scenarioDescription = document.getElementById("scenarioDescription");
+    const questionProgress = document.getElementById("questionProgress");
+    const tradeResult = document.getElementById("tradeResult");
+
+    function loadScenario() {
+      const scenario = scenarios[currentScenario];
+      scenarioTitle.innerText = scenario.title;
+      scenarioDescription.innerText = scenario.description;
+      questionProgress.innerText = `Question ${currentScenario + 1} of ${scenarios.length}`;
+      tradeResult.innerText = "Select a trade option to begin.";
+    }
+
+    function evaluateAnswer(choice) {
+      const scenario = scenarios[currentScenario];
+      const correct = scenario.correctOption === choice;
+      const profitLoss = correct ? 100 : -100;
+      const fee = 100 * 0.01; // 1% fee
+      const netChange = profitLoss - fee;
+      balance += netChange;
+      balanceElement.innerText = balance.toFixed(2);
+
+      tradeResult.innerText = `You chose: ${choice === "buyLong" ? "Buy Long (Call)" : "Buy Short (Put)"}. Profit/Loss: USD ${netChange.toFixed(2)}`;
+      correct ? correctAnswers.push(scenario.title) : wrongAnswers.push(scenario.title);
+    }
+
+    function nextScenario() {
+      setTimeout(() => {
+        currentScenario++;
+        if (currentScenario < scenarios.length) {
+          loadScenario();
+        } else {
+          showResults();
+        }
+      }, 1500);
+    }
+
+    function showResults() {
+      document.getElementById("finalResults").innerHTML = `
+        <h3>Final Results</h3>
+        <p>Final Balance: USD ${balance.toFixed(2)}</p>
+        <p>Correct Answers: ${correctAnswers.length} (${correctAnswers.join(", ")})</p>
+        <p>Wrong Answers: ${wrongAnswers.length} (${wrongAnswers.join(", ")})</p>
+      `;
+    }
+
+    document.getElementById("buyLongBtn").addEventListener("click", () => {
+      if (currentScenario < scenarios.length) {
+        evaluateAnswer("buyLong");
+        nextScenario();
+      }
+    });
+
+    document.getElementById("buyShortBtn").addEventListener("click", () => {
+      if (currentScenario < scenarios.length) {
+        evaluateAnswer("buyShort");
+        nextScenario();
+      }
+    });
+
+    loadScenario();
+  </script>
+</body>
+</html>

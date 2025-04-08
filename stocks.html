@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stocks Portfolio Simulator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9fafb;
+      margin: 0;
+      padding: 2rem;
+    }
+    h1 {
+      color: #1f2937;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      text-align: left;
+    }
+    th {
+      background-color: #e5e7eb;
+    }
+    .profit {
+      color: green;
+    }
+    .loss {
+      color: red;
+    }
+    .totals {
+      margin-top: 2rem;
+      font-weight: bold;
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    input {
+      margin: 0.25rem 0;
+      padding: 0.5rem;
+      width: 100%;
+    }
+    .form-section {
+      max-width: 400px;
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Trading Simulator</h1>
+
+  <div class="form-section">
+    <label>Stock Name:</label>
+    <input type="text" id="stockName">
+    <label>Purchase Price:</label>
+    <input type="number" id="purchasePrice" step="0.01">
+    <label>Current Price:</label>
+    <input type="number" id="currentPrice" step="0.01">
+    <label>Quantity:</label>
+    <input type="number" id="quantity" step="0.01">
+    <button onclick="addStock()">Add Stock</button>
+  </div>
+
+  <table id="resultsTable">
+    <thead>
+      <tr>
+        <th>Stock</th>
+        <th>Purchase Price</th>
+        <th>Current Price</th>
+        <th>Quantity</th>
+        <th>Profit/Loss</th>
+        <th>Change %</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="totals" id="totals"></div>
+
+  <script>
+    const stocks = [];
+
+    function addStock() {
+      const name = document.getElementById("stockName").value;
+      const purchasePrice = parseFloat(document.getElementById("purchasePrice").value);
+      const currentPrice = parseFloat(document.getElementById("currentPrice").value);
+      const quantity = parseFloat(document.getElementById("quantity").value);
+
+      if (!name || isNaN(purchasePrice) || isNaN(currentPrice) || isNaN(quantity)) return;
+
+      const investment = purchasePrice * quantity;
+      const currentValue = currentPrice * quantity;
+      const profitLoss = currentValue - investment;
+      const percentageChange = (profitLoss / investment) * 100;
+
+      stocks.push({ name, purchasePrice, currentPrice, quantity, profitLoss, percentageChange });
+
+      renderTable();
+      clearInputs();
+    }
+
+    function clearInputs() {
+      document.getElementById("stockName").value = "";
+      document.getElementById("purchasePrice").value = "";
+      document.getElementById("currentPrice").value = "";
+      document.getElementById("quantity").value = "";
+    }
+
+    function renderTable() {
+      const tbody = document.querySelector("#resultsTable tbody");
+      tbody.innerHTML = "";
+
+      let totalInvestment = 0;
+      let totalCurrentValue = 0;
+
+      stocks.sort((a, b) => b.percentageChange - a.percentageChange);
+
+      stocks.forEach(stock => {
+        totalInvestment += stock.purchasePrice * stock.quantity;
+        totalCurrentValue += stock.currentPrice * stock.quantity;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${stock.name}</td>
+          <td>USD ${stock.purchasePrice.toFixed(2)}</td>
+          <td>USD ${stock.currentPrice.toFixed(2)}</td>
+          <td>${stock.quantity}</td>
+          <td class="${stock.profitLoss >= 0 ? 'profit' : 'loss'}">USD ${stock.profitLoss.toFixed(2)}</td>
+          <td class="${stock.percentageChange >= 0 ? 'profit' : 'loss'}">${stock.percentageChange.toFixed(2)}%</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      const totalProfitLoss = totalCurrentValue - totalInvestment;
+      const totalPercentage = (totalProfitLoss / totalInvestment) * 100;
+
+      document.getElementById("totals").innerHTML = `
+        Total Invested: USD ${totalInvestment.toFixed(2)}<br>
+        Total Current Value: USD ${totalCurrentValue.toFixed(2)}<br>
+        Total Profit/Loss: <span class="${totalProfitLoss >= 0 ? 'profit' : 'loss'}">USD ${totalProfitLoss.toFixed(2)}</span><br>
+        Total Change: <span class="${totalPercentage >= 0 ? 'profit' : 'loss'}">${totalPercentage.toFixed(2)}%</span>
+      `;
+    }
+  </script>
+</body>
+</html>
